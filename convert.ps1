@@ -20,7 +20,7 @@ $hevc="hevc_nvenc"
 $avc="h264_nvenc"
 Import-Module CIM -ErrorAction SilentlyContinue
 $gpu = Get-CimInstance -ClassName CIM_VideoController | Select-Object -ExpandProperty Name
-if ($gpu -match ".*5\d\d\d$")
+if ($gpu -match ".*4\d\d\d$")
 {
     $nvenc= $av1
 }
