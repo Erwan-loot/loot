@@ -38,12 +38,13 @@ if (!$av1 -and !$hevc -and !$avc)
     Write-Host "Aucun codec choisi, il sera determiné en fonction du GPU" -ForegroundColor DarkGray
     $codec = $false
 }
-if (($gpu -match ".*[4-9]\d\d\d$" -and !$codec) -or $av1)
+# if (($gpu -match ".*[4-9]\d\d\d$" -and !$codec) -or $av1)
+if ($av1)
 {
     Write-Host "Le codec choisi est AV1" -ForegroundColor DarkGray
     $codec=$av1_nvenc
 }
-elseif (($gpu -match ".*[2-3]\d\d\d$" -and !$codec) -or $hevc)
+elseif (($gpu -match ".*[2-9]\d\d\d$" -and !$codec) -or $hevc)
 {
     Write-Host "Le codec choisi est HEVC (H265)" -ForegroundColor DarkGray
     $codec=$hevc_nvenc
@@ -79,10 +80,13 @@ else
 {
     # Convertir les fichiers vidéo
     Write-Host -ForegroundColor Yellow "Les vidéos qui vont être réencodés sont : "
-    Write-Host -ForegroundColor Green ($videoFiles).Name | Format-Table
+    $videoFiles | ForEach-Object {
+        Write-Host $_.Name -ForegroundColor Green
+    }
+
      $videoFiles | Foreach-Object {
         $cq=$qualité
         write-host "Réencondage en cours : $($_.Name) avec le codec $($codec) en qualité $cq" -ForegroundColor Blue
-        Start-Process -NoNewWindow -Wait -FilePath "ffmpeg.exe" -ArgumentList "-hide_banner -i `"$($_.fullname)`" -c:a copy -c:s copy  -preset:v 1  -b_ref_mode 2  -temporal-aq 1  -rc-lookahead 35  -spatial-aq 1  -multipass 2  -c:v $($codec) -2pass true -y -crf 30 -loglevel error -stats -cq:v $cq -nonref_p 1 -f mp4 `"$($_.directory)\$($_.basename)_$($codec)_$cq.mp4`""
+        Start-Process -NoNewWindow -Wait -FilePath "ffmpeg.exe" -ArgumentList "-hide_banner -i `"$($_.fullname)`" -c:a copy -c:s copy -tune 1 -preset:v 1  -b_ref_mode 2  -temporal-aq 1  -rc-lookahead 35  -spatial-aq 1  -multipass 2  -c:v $($codec) -2pass true -y -crf 30 -loglevel error -stats -cq:v $cq -nonref_p 1 -f mp4 `"$($_.directory)\$($_.basename)_$($codec)_$cq.mp4`""
      }
 }
